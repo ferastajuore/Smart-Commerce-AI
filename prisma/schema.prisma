@@ -1,0 +1,282 @@
+// Smart Commerce AI — Database Schema (MVP)
+// Implements DATABASE.md Section 4 exactly.
+// Ref: DATABASE.md §4 (entities), §5 (relationships), §6 (indexes), §7 (enums), §9 (integrity constraints)
+//
+// CHECK constraints (DATABASE.md §9) are applied via custom migration SQL, not in the schema,
+// because Prisma does not support @@check natively. See migration file for CHECK constraints
+// on Inventory.quantity >= 0 and OrderItem.quantity > 0.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Connection URL is configured in prisma.config.ts (Prisma 7 requirement)
+}
+
+// =============================================================================
+// Enumerations — DATABASE.md §7
+// =============================================================================
+
+enum UserRole {
+  STORE_OWNER
+  PLATFORM_ADMIN
+}
+
+enum WorkspaceStatus {
+  TRIAL
+  ACTIVE
+  RESTRICTED
+  SUSPENDED
+}
+
+enum SubscriptionPlanName {
+  STARTER
+  BUSINESS
+  PRO
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  EXPIRED
+}
+
+enum MessengerConnectionStatus {
+  CONNECTED
+  DISCONNECTED
+  ERROR
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// =============================================================================
+// Entities — DATABASE.md §4
+// =============================================================================
+
+/// User — DATABASE.md §4.1
+/// Represents both Store Owners and Platform Administrators.
+/// A single table with a role discriminator (ARCHITECTURE.md §12).
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+  phone        String? // Required for STORE_OWNER, nullable for PLATFORM_ADMIN
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  ownedWorkspace Workspace?
+  auditLogs      AuditLog[]
+  decidedOrders  Order[]    @relation("DecidedBy")
+
+  @@map("User")
+}
+
+/// Workspace — DATABASE.md §4.2
+/// The core tenant entity. Referred to as "Store" in product-facing contexts (AGENTS.md §7).
+model Workspace {
+  id           String          @id @default(uuid()) @db.Uuid
+  ownerId      String          @unique @db.Uuid
+  businessName String
+  contactEmail String
+  contactPhone String
+  status       WorkspaceStatus @default(TRIAL)
+  trialEndsAt  DateTime
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  // Relationships
+  owner               User                 @relation(fields: [ownerId], references: [id])
+  subscription        Subscription?
+  messengerConnection MessengerConnection?
+  products            Product[]
+  inventories         Inventory[]
+  orders              Order[]
+  auditLogs           AuditLog[]
+
+  @@index([ownerId])
+  @@map("Workspace")
+}
+
+/// SubscriptionPlan — DATABASE.md §4.3
+/// Platform-level catalog of plans, managed by the Platform Administrator (PRD.md ADM-3).
+/// Not tenant-owned — no workspaceId.
+model SubscriptionPlan {
+  id                         String               @id @default(uuid()) @db.Uuid
+  name                       SubscriptionPlanName @unique
+  priceUsd                   Decimal              @db.Decimal(10, 2)
+  monthlyAiConversationLimit Int
+  isActive                   Boolean              @default(true)
+  createdAt                  DateTime             @default(now())
+  updatedAt                  DateTime             @updatedAt
+
+  // Relationships
+  subscriptions Subscription[]
+
+  @@map("SubscriptionPlan")
+}
+
+/// Subscription — DATABASE.md §4.4
+/// The join between a Workspace and its current plan, plus usage tracking.
+/// One-to-one with Workspace in MVP.
+model Subscription {
+  id                  String             @id @default(uuid()) @db.Uuid
+  workspaceId         String             @unique @db.Uuid
+  planId              String             @db.Uuid
+  status              SubscriptionStatus
+  currentPeriodStart  DateTime
+  currentPeriodEnd    DateTime
+  aiConversationsUsed Int                @default(0)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  // Relationships
+  workspace Workspace        @relation(fields: [workspaceId], references: [id])
+  plan      SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@index([workspaceId])
+  @@map("Subscription")
+}
+
+/// MessengerConnection — DATABASE.md §4.5
+/// One connected Facebook Page per Workspace in MVP (PRD.md MSG-1).
+model MessengerConnection {
+  id                       String                    @id @default(uuid()) @db.Uuid
+  workspaceId              String                    @unique @db.Uuid
+  pageId                   String
+  pageAccessTokenEncrypted String
+  status                   MessengerConnectionStatus @default(DISCONNECTED)
+  connectedAt              DateTime?
+  lastVerifiedAt           DateTime?
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+
+  // Relationships
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@index([workspaceId])
+  @@map("MessengerConnection")
+}
+
+/// Product — DATABASE.md §4.6
+model Product {
+  id          String        @id @default(uuid()) @db.Uuid
+  workspaceId String        @db.Uuid
+  name        String
+  sku         String
+  price       Decimal       @db.Decimal(10, 2)
+  status      ProductStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relationships
+  workspace  Workspace   @relation(fields: [workspaceId], references: [id])
+  inventory  Inventory?
+  orderItems OrderItem[]
+
+  @@unique([workspaceId, sku])
+  @@index([workspaceId])
+  @@index([workspaceId, status])
+  @@map("Product")
+}
+
+/// Inventory — DATABASE.md §4.7
+/// Modeled as a distinct table from Product, mirroring the distinct Inventory Module
+/// boundary in ARCHITECTURE.md §5.
+/// CHECK constraint: quantity >= 0 (applied in migration SQL, DATABASE.md §4.7, §9)
+model Inventory {
+  id          String   @id @default(uuid()) @db.Uuid
+  workspaceId String   @db.Uuid
+  productId   String   @unique @db.Uuid
+  quantity    Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  product   Product   @relation(fields: [productId], references: [id])
+
+  @@index([workspaceId])
+  @@index([productId])
+  @@map("Inventory")
+}
+
+/// Order — DATABASE.md §4.8
+model Order {
+  id                  String      @id @default(uuid()) @db.Uuid
+  workspaceId         String      @db.Uuid
+  status              OrderStatus @default(PENDING)
+  customerName        String?
+  customerPhone       String?
+  customerAddress     String?
+  customerMessengerId String
+  totalAmount         Decimal     @db.Decimal(10, 2)
+  decidedByUserId     String?     @db.Uuid
+  decidedAt           DateTime?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  // Relationships
+  workspace  Workspace   @relation(fields: [workspaceId], references: [id])
+  decidedBy  User?       @relation("DecidedBy", fields: [decidedByUserId], references: [id])
+  orderItems OrderItem[]
+
+  @@index([workspaceId])
+  @@index([workspaceId, status])
+  @@map("Order")
+}
+
+/// OrderItem — DATABASE.md §4.9
+/// Line items of an Order, with price snapshotting.
+/// CHECK constraint: quantity > 0 (applied in migration SQL, DATABASE.md §4.9)
+model OrderItem {
+  id               String  @id @default(uuid()) @db.Uuid
+  orderId          String  @db.Uuid
+  productId        String  @db.Uuid
+  quantity         Int
+  unitPriceAtOrder Decimal @db.Decimal(10, 2)
+
+  // Relationships
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@map("OrderItem")
+}
+
+/// AuditLog — DATABASE.md §4.10
+/// Structure matches AGENTS.md §10 Rule 6 exactly.
+/// Write-once record — no update or delete operations are ever exposed (ARCHITECTURE.md §10).
+model AuditLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  workspaceId   String?  @db.Uuid // Nullable for platform-level entries
+  actorId       String   @db.Uuid
+  action        String // e.g., ORDER_APPROVED, INVENTORY_ADJUSTED, SUBSCRIPTION_CHANGED
+  entity        String // e.g., Order, Product, Subscription
+  entityId      String   @db.Uuid // The affected record's ID — stored as UUID, not a FK (references multiple entity types)
+  previousState Json?
+  newState      Json?
+  reason        String?
+  createdAt     DateTime @default(now())
+
+  // Relationships
+  workspace Workspace? @relation(fields: [workspaceId], references: [id])
+  actor     User       @relation(fields: [actorId], references: [id])
+
+  @@index([workspaceId])
+  @@index([entityId])
+  @@index([workspaceId, createdAt])
+  @@map("AuditLog")
+}
