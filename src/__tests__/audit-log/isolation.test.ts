@@ -11,11 +11,11 @@
 // 4. Audit entries are immutable (no update/delete exposed)
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { PrismaClient } from "@prisma/client";
+import { createTestPrismaClient } from "../helpers/create-test-prisma-client";
 import { recordAuditEntry } from "@/modules/audit-log/services/record-audit-entry";
 import { getAuditLog } from "@/modules/audit-log/services/get-audit-log";
 
-const prisma = new PrismaClient();
+const prisma = createTestPrismaClient();
 
 // Test workspace IDs
 const WORKSPACE_A_ID = "00000000-0000-0000-0000-000000000003";
@@ -23,8 +23,25 @@ const WORKSPACE_B_ID = "00000000-0000-0000-0000-000000000004";
 const ACTOR_A_ID = "00000000-0000-0000-0000-000000000021";
 const ACTOR_B_ID = "00000000-0000-0000-0000-000000000022";
 
+// Valid UUIDs for entityId — required because AuditLog.entityId is @db.Uuid
+const TEST_ORDER_A1 = "00000000-0000-0000-0000-0000000000a1";
+const TEST_ORDER_A2 = "00000000-0000-0000-0000-0000000000a2";
+const TEST_ORDER_B1 = "00000000-0000-0000-0000-0000000000b1";
+const TEST_AUDIT_ID = "00000000-0000-0000-0000-0000000000c1";
+
 describe("Audit Log Tenant Isolation", () => {
   beforeAll(async () => {
+    // Clean up any stale data from previous test runs
+    await prisma.auditLog.deleteMany({
+      where: { actorId: { in: [ACTOR_A_ID, ACTOR_B_ID] } },
+    });
+    await prisma.workspace.deleteMany({
+      where: { id: { in: [WORKSPACE_A_ID, WORKSPACE_B_ID] } },
+    });
+    await prisma.user.deleteMany({
+      where: { id: { in: [ACTOR_A_ID, ACTOR_B_ID] } },
+    });
+
     // Create test users
     await prisma.user.createMany({
       data: [
@@ -71,10 +88,11 @@ describe("Audit Log Tenant Isolation", () => {
   });
 
   afterAll(async () => {
-    // Clean up test data
+    // Clean up test data — delete audit logs by actorId to catch
+    // platform-level entries (workspaceId: null) as well as workspace-scoped ones
     await prisma.auditLog.deleteMany({
       where: {
-        workspaceId: { in: [WORKSPACE_A_ID, WORKSPACE_B_ID] },
+        actorId: { in: [ACTOR_A_ID, ACTOR_B_ID] },
       },
     });
     await prisma.workspace.deleteMany({
@@ -93,7 +111,7 @@ describe("Audit Log Tenant Isolation", () => {
         actorId: ACTOR_A_ID,
         action: "ORDER_APPROVED",
         entity: "Order",
-        entityId: "test-order-id",
+        entityId: TEST_ORDER_A1,
         previousState: { status: "PENDING" },
         newState: { status: "APPROVED" },
       });
@@ -111,7 +129,7 @@ describe("Audit Log Tenant Isolation", () => {
         actorId: ACTOR_A_ID,
         action: "ADMIN_ACCESS_AUDIT_LOG",
         entity: "AuditLog",
-        entityId: "test-audit-log-id",
+        entityId: TEST_AUDIT_ID,
       });
 
       expect(entry).toBeDefined();
@@ -129,14 +147,14 @@ describe("Audit Log Tenant Isolation", () => {
         actorId: ACTOR_A_ID,
         action: "ORDER_CREATED",
         entity: "Order",
-        entityId: "order-a-1",
+        entityId: TEST_ORDER_A1,
       });
       await recordAuditEntry({
         workspaceId: WORKSPACE_A_ID,
         actorId: ACTOR_A_ID,
         action: "ORDER_APPROVED",
         entity: "Order",
-        entityId: "order-a-1",
+        entityId: TEST_ORDER_A2,
       });
 
       // Create entries for Workspace B
@@ -145,7 +163,7 @@ describe("Audit Log Tenant Isolation", () => {
         actorId: ACTOR_B_ID,
         action: "ORDER_CREATED",
         entity: "Order",
-        entityId: "order-b-1",
+        entityId: TEST_ORDER_B1,
       });
     });
 
@@ -169,7 +187,7 @@ describe("Audit Log Tenant Isolation", () => {
 
     it("returns empty results for non-existent workspace ID (no cross-tenant leakage)", async () => {
       const entries = await getAuditLog(
-        "non-existent-workspace-id",
+        "00000000-0000-0000-0000-000000000099",
       );
 
       expect(entries).toEqual([]);

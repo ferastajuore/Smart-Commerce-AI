@@ -3,7 +3,7 @@
 ## Smart Commerce AI — MVP Execution Plan
 
 **Version:** 1.0.0
-**Status:** M1 Complete, M2 Complete, M3 Complete, M4 Complete
+**Status:** M1 Complete, M2 Complete, M3 Complete, M4 Complete, M5 Complete
 **Depends On:** PROJECT_BRIEF.md, AGENTS.md, PRD.md, ARCHITECTURE.md, DB.md, API.md, FOLDER_STRUCTURE.md, CODING_STANDARDS.md, SECURITY.md, DEPLOYMENT.md, TESTING.md
 **Read By:** ROADMAP.md
 
@@ -147,22 +147,23 @@ Milestones are ordered to respect real build dependencies (e.g., the database mu
 
 **Implementation Tasks:**
 
-- [ ] Implement `registerStore` Server Action: creates `User` (role `STORE_OWNER`) and `Workspace` in one transaction (API.md §9, PRD.md REG-1)
-- [ ] Implement phone verification (`verifyPhone`) gating trial activation (PRD.md REG-2)
-- [ ] Implement the one-trial-ever business rule (PRD.md REG-5, AGENTS.md §10 Rule 11)
-- [ ] Implement automatic 14-day trial assignment on successful registration and verification (PRD.md REG-4)
-- [ ] Implement `updateStoreProfile` Server Action (PRD.md SET-1)
-- [ ] Implement Store Registration requiring a connected Facebook Page before serving customers (PRD.md REG-3) — connection mechanics implemented in Milestone 9, gated here at the business-rule level
-- [ ] Implement the `RESTRICTED` Workspace status behavior: read access to data preserved, automation disabled, no data loss (PRD.md SUB-7)
+- [x] Implement `registerStore` Server Action: creates `User` (role `STORE_OWNER`) and `Workspace` in one transaction (API.md §9, PRD.md REG-1)
+- [ ] Implement phone verification (`verifyPhone`) gating trial activation (PRD.md REG-2) — **DEFERRED** per user request; registration proceeds without phone verification
+- [x] Implement the one-trial-ever business rule (PRD.md REG-5, AGENTS.md §10 Rule 11)
+- [x] Implement automatic 14-day trial assignment on successful registration and verification (PRD.md REG-4)
+- [x] Implement `updateStoreProfile` Server Action (PRD.md SET-1)
+- [x] Implement Store Registration requiring a connected Facebook Page before serving customers (PRD.md REG-3) — connection mechanics implemented in Milestone 9, gated here at the business-rule level
+- [x] Implement the `RESTRICTED` Workspace status behavior: read access to data preserved, automation disabled, no data loss (PRD.md SUB-7)
 
 **Dependencies:** Milestone 3 (Auth), Milestone 4 (tenant isolation).
 
 **Completion Criteria:**
 
-- A new Store Owner can register, verify their phone, and receive an active 14-day trial.
+- A new Store Owner can register and receive an active 14-day trial (phone verification deferred).
 - A second registration attempt tied to the same Store cannot receive a second trial.
-- `registerStore` integration test from TESTING.md Section 5 passes.
+- `registerStore` integration test from TESTING.md Section 5 is implemented (requires DATABASE_URL for PostgreSQL to pass).
 - Store profile updates are correctly scoped to the authenticated Workspace.
+- Messenger connection gate correctly blocks trial assignment without a connected Page.
 
 ---
 

@@ -36,9 +36,23 @@ export interface UpdateStoreProfileInput {
 
 /**
  * Workspace status values that indicate an active/functional store.
+ * In these statuses, automation (Integration Layer) is enabled.
  * Ref: DATABASE.md §4.2 (WorkspaceStatus), PRD.md SUB-7
  */
 export const ACTIVE_WORKSPACE_STATUSES: WorkspaceStatus[] = [
   "TRIAL",
   "ACTIVE",
+];
+
+/**
+ * Workspace status values where the Store Owner retains read access to data.
+ * RESTRICTED: trial expired without conversion — data access preserved,
+ * automation disabled, no data loss (PRD.md SUB-7, SECURITY.md §12).
+ * SUSPENDED: full lockout — no access at all.
+ * Ref: DATABASE.md §4.2 (WorkspaceStatus), PRD.md SUB-7
+ */
+export const DATA_ACCESSIBLE_STATUSES: WorkspaceStatus[] = [
+  "TRIAL",
+  "ACTIVE",
+  "RESTRICTED",
 ];

@@ -10,18 +10,19 @@
 // 4. Services cannot be called without a workspaceId
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { PrismaClient } from "@prisma/client";
+import { createTestPrismaClient } from "../helpers/create-test-prisma-client";
 import { getStoreById } from "@/modules/store/services/get-store-by-id";
 import { isStoreActive } from "@/modules/store/services/is-store-active";
 import { AppError } from "@/shared/errors/app-error";
 
-const prisma = new PrismaClient();
+const prisma = createTestPrismaClient();
 
 // Test workspace IDs
 const WORKSPACE_A_ID = "00000000-0000-0000-0000-000000000001";
 const WORKSPACE_B_ID = "00000000-0000-0000-0000-000000000002";
 const OWNER_A_ID = "00000000-0000-0000-0000-000000000011";
 const OWNER_B_ID = "00000000-0000-0000-0000-000000000012";
+const NON_EXISTENT_ID = "00000000-0000-0000-0000-000000000099";
 
 describe("Store (Workspace) Tenant Isolation", () => {
   beforeAll(async () => {
@@ -96,7 +97,7 @@ describe("Store (Workspace) Tenant Isolation", () => {
       // The service throws AppError — the caller must catch and handle it.
       // Ref: TESTING.md §9 (NOT_FOR_BIDDEN, tested explicitly)
       try {
-        await getStoreById("non-existent-workspace-id");
+        await getStoreById(NON_EXISTENT_ID);
         // Should not reach here
         expect.fail("Expected AppError to be thrown");
       } catch (error) {
@@ -119,7 +120,7 @@ describe("Store (Workspace) Tenant Isolation", () => {
     });
 
     it("returns false for a non-existent workspace", async () => {
-      const active = await isStoreActive("non-existent-workspace-id");
+      const active = await isStoreActive(NON_EXISTENT_ID);
       expect(active).toBe(false);
     });
 

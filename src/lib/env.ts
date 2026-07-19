@@ -7,9 +7,9 @@ const envSchema = z.object({
   ENCRYPTION_KEY: z.string().min(1),
   FACEBOOK_APP_ID: z.string().min(1),
   FACEBOOK_APP_SECRET: z.string().min(1),
-  SMS_PROVIDER_API_KEY: z.string().min(1),
-  SMS_PROVIDER_API_SECRET: z.string().min(1),
   INTEGRATION_CREDENTIAL_SALT: z.string().min(1),
+  SMS_PROVIDER_API_KEY: z.string().min(1).optional(),
+  SMS_PROVIDER_API_SECRET: z.string().min(1).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

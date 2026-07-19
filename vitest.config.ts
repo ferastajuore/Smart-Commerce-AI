@@ -27,6 +27,7 @@ export default defineConfig({
       provider: "v8",
       include: [
         "src/shared/tenant/**/*.ts",
+        "src/modules/auth/**/*.ts",
         "src/modules/store/**/*.ts",
         "src/modules/audit-log/**/*.ts",
         "src/modules/admin/**/*.ts",

@@ -92,4 +92,8 @@ export const AuthRateLimits = {
     maxAttempts: 3,
     windowMs: 60 * 60 * 1000, // 1 hour
   },
+  register: {
+    maxAttempts: 3,
+    windowMs: 60 * 60 * 1000, // 1 hour — coarse-grained per IP (SECURITY.md §9)
+  },
 } as const;

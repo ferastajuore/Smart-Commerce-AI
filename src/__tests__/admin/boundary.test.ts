@@ -11,7 +11,7 @@
 // 3. The two workspace lookup functions are structurally distinct
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { PrismaClient } from "@prisma/client";
+import { createTestPrismaClient } from "../helpers/create-test-prisma-client";
 // ESLint disable: This test SPECIFICALLY validates the admin/data/ cross-tenant
 // boundary (SECURITY.md §5.3, ARCHITECTURE.md §7). Importing directly from
 // admin/data/ is intentional — the test documents that admin data path is the
@@ -22,31 +22,43 @@ import { findAllWorkspaces } from "@/modules/admin/data/find-workspaces-for-admi
 // eslint-disable-next-line no-restricted-imports
 import { findWorkspaceByIdForAdmin } from "@/modules/admin/data/find-workspace-by-id-for-admin";
 
-const prisma = new PrismaClient();
+const prisma = createTestPrismaClient();
 
 // Test workspace IDs
 const WORKSPACE_C_ID = "00000000-0000-0000-0000-000000000005";
 const WORKSPACE_D_ID = "00000000-0000-0000-0000-000000000006";
-const ADMIN_ID = "00000000-0000-0000-0000-000000000031";
+const OWNER_C_ID = "00000000-0000-0000-0000-000000000031";
+const OWNER_D_ID = "00000000-0000-0000-0000-000000000032";
+const NON_EXISTENT_ID = "00000000-0000-0000-0000-000000000099";
 
 describe("Admin Module Boundary", () => {
   beforeAll(async () => {
-    // Create test admin user
-    await prisma.user.create({
-      data: {
-        id: ADMIN_ID,
-        email: "admin@test.com",
-        passwordHash: "hashed-password",
-        role: "PLATFORM_ADMIN",
-      },
+    // Create test users — each workspace needs a unique ownerId (schema: ownerId @unique)
+    await prisma.user.createMany({
+      data: [
+        {
+          id: OWNER_C_ID,
+          email: "owner-c@test.com",
+          passwordHash: "hashed-password",
+          role: "STORE_OWNER",
+          phone: "+1234567031",
+        },
+        {
+          id: OWNER_D_ID,
+          email: "owner-d@test.com",
+          passwordHash: "hashed-password",
+          role: "STORE_OWNER",
+          phone: "+1234567032",
+        },
+      ],
     });
 
-    // Create test workspaces
+    // Create test workspaces — one per owner (unique ownerId constraint)
     await prisma.workspace.createMany({
       data: [
         {
           id: WORKSPACE_C_ID,
-          ownerId: ADMIN_ID,
+          ownerId: OWNER_C_ID,
           businessName: "Admin Test Store C",
           contactEmail: "store-c@test.com",
           contactPhone: "+1234567005",
@@ -55,7 +67,7 @@ describe("Admin Module Boundary", () => {
         },
         {
           id: WORKSPACE_D_ID,
-          ownerId: ADMIN_ID,
+          ownerId: OWNER_D_ID,
           businessName: "Admin Test Store D",
           contactEmail: "store-d@test.com",
           contactPhone: "+1234567006",
@@ -72,7 +84,7 @@ describe("Admin Module Boundary", () => {
       where: { id: { in: [WORKSPACE_C_ID, WORKSPACE_D_ID] } },
     });
     await prisma.user.deleteMany({
-      where: { id: ADMIN_ID },
+      where: { id: { in: [OWNER_C_ID, OWNER_D_ID] } },
     });
     await prisma.$disconnect();
   });
@@ -116,9 +128,7 @@ describe("Admin Module Boundary", () => {
     });
 
     it("returns null for non-existent workspace ID", async () => {
-      const workspace = await findWorkspaceByIdForAdmin(
-        "non-existent-workspace-id",
-      );
+      const workspace = await findWorkspaceByIdForAdmin(NON_EXISTENT_ID);
 
       expect(workspace).toBeNull();
     });
