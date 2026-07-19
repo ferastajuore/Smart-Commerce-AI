@@ -3,7 +3,7 @@
 ## Smart Commerce AI — MVP Execution Plan
 
 **Version:** 1.0.0
-**Status:** M1 Complete, M2 Complete
+**Status:** M1 Complete, M2 Complete, M3 Complete
 **Depends On:** PROJECT_BRIEF.md, AGENTS.md, PRD.md, ARCHITECTURE.md, DB.md, API.md, FOLDER_STRUCTURE.md, CODING_STANDARDS.md, SECURITY.md, DEPLOYMENT.md, TESTING.md
 **Read By:** ROADMAP.md
 
@@ -94,18 +94,18 @@ Milestones are ordered to respect real build dependencies (e.g., the database mu
 
 **Implementation Tasks:**
 
-- [ ] Configure NextAuth with credential-based (email/password) authentication (PRD.md AUTH-1, ARCHITECTURE.md §12)
-- [ ] Implement password hashing per SECURITY.md Section 4.1 (bcrypt or argon2, work factor fixed once in `lib/auth.ts`)
-- [ ] Implement `modules/auth/services/getCurrentUser()`, `requireStoreOwner()`, `requireAdmin()` (ARCHITECTURE.md §5)
-- [ ] Implement session encoding of exactly one `role` and, for `STORE_OWNER`, the associated `workspaceId` (SECURITY.md §4.2)
-- [ ] Implement session re-verification against the database on sensitive actions rather than trusting the token indefinitely (SECURITY.md §4.2)
-- [ ] Implement `app/stores/layout.tsx` enforcing `STORE_OWNER` session (PRD.md AUTH-3/AUTH-4, FOLDER_STRUCTURE.md §4)
-- [ ] Implement `app/admin/layout.tsx` enforcing `PLATFORM_ADMIN` session (PRD.md AUTH-3/AUTH-4, FOLDER_STRUCTURE.md §4)
-- [ ] Implement `login`, `logout` Server Actions (API.md §9)
-- [ ] Implement `requestPasswordReset`, `resetPassword` Server Actions (PRD.md AUTH-5)
-- [ ] Implement rate limiting on `login` and `requestPasswordReset` (SECURITY.md §9)
-- [ ] Implement Platform Administrator provisioning via a controlled seed script, not a public endpoint (SECURITY.md §4.5, API.md §9)
-- [ ] Define session expiry and inactivity timeout (finite in all cases per SECURITY.md §4.2)
+- [x] Configure NextAuth with credential-based (email/password) authentication (PRD.md AUTH-1, ARCHITECTURE.md §12)
+- [x] Implement password hashing per SECURITY.md Section 4.1 (bcrypt or argon2, work factor fixed once in `lib/auth.ts`)
+- [x] Implement `modules/auth/services/getCurrentUser()`, `requireStoreOwner()`, `requireAdmin()` (ARCHITECTURE.md §5)
+- [x] Implement session encoding of exactly one `role` and, for `STORE_OWNER`, the associated `workspaceId` (SECURITY.md §4.2)
+- [x] Implement session re-verification against the database on sensitive actions rather than trusting the token indefinitely (SECURITY.md §4.2)
+- [x] Implement `app/stores/layout.tsx` enforcing `STORE_OWNER` session (PRD.md AUTH-3/AUTH-4, FOLDER_STRUCTURE.md §4)
+- [x] Implement `app/admin/layout.tsx` enforcing `PLATFORM_ADMIN` session (PRD.md AUTH-3/AUTH-4, FOLDER_STRUCTURE.md §4)
+- [x] Implement `login`, `logout` Server Actions (API.md §9)
+- [x] Implement `requestPasswordReset`, `resetPassword` Server Actions (PRD.md AUTH-5)
+- [x] Implement rate limiting on `login` and `requestPasswordReset` (SECURITY.md §9)
+- [x] Implement Platform Administrator provisioning via a controlled seed script, not a public endpoint (SECURITY.md §4.5, API.md §9)
+- [x] Define session expiry and inactivity timeout (finite in all cases per SECURITY.md §4.2)
 
 **Dependencies:** Milestone 2 (User table exists).
 

@@ -1,15 +1,26 @@
 // Seed script for local/test data
 // Ref: TASKS.md Milestone 2 — creates baseline data for integration tests and local development
+// SECURITY.md §4.5 — Platform Administrator provisioning via controlled seed script, not a public endpoint.
+// SECURITY.md §4.1 — Passwords hashed with bcrypt (work factor from lib/auth.ts).
 //
 // Creates:
 // - Three SubscriptionPlans (Starter, Business, Pro) — platform-level catalog
-// - One Store Owner User
+// - One Store Owner User (with properly hashed password)
 // - One Workspace (with trial subscription)
 // - One Product with Inventory
-// - One Platform Administrator
+// - One Platform Administrator (with properly hashed password)
+//
+// WARNING: This script is for local development and testing only.
+// Platform Administrator accounts are NEVER created through a public registration flow.
+// This is the ONLY sanctioned mechanism for creating admin accounts in MVP.
+// Ref: SECURITY.md §4.5, API.md §9
 
 import { PrismaClient, Prisma } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import bcrypt from "bcryptjs";
+
+// BCRYPT_WORK_FACTOR must match lib/auth.ts
+const BCRYPT_WORK_FACTOR = 12;
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
@@ -60,12 +71,18 @@ async function main() {
   });
 
   // --- Store Owner User (DATABASE.md §4.1) ---
+  // Password: "password123" (dev only — real passwords are never committed)
+  const storeOwnerPasswordHash = await bcrypt.hash(
+    "password123",
+    BCRYPT_WORK_FACTOR,
+  );
+
   const storeOwner = await prisma.user.upsert({
     where: { email: "owner@example.com" },
     update: {},
     create: {
       email: "owner@example.com",
-      passwordHash: "$2a$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012", // placeholder — real hashing in M3
+      passwordHash: storeOwnerPasswordHash,
       role: "STORE_OWNER",
       phone: "+218911234567",
     },
@@ -143,12 +160,21 @@ async function main() {
   console.log("  Inventory created:", inventory.id);
 
   // --- Platform Administrator (DATABASE.md §4.1) ---
+  // SECURITY.md §4.5: Administrator accounts are provisioned via this controlled
+  // seed script, NOT through any public registration endpoint.
+  // This is the ONLY sanctioned mechanism for creating admin accounts in MVP.
+  // Password: "admin123" (dev only — real passwords are never committed)
+  const adminPasswordHash = await bcrypt.hash(
+    "admin123",
+    BCRYPT_WORK_FACTOR,
+  );
+
   const admin = await prisma.user.upsert({
     where: { email: "admin@example.com" },
     update: {},
     create: {
       email: "admin@example.com",
-      passwordHash: "$2a$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012", // placeholder — real provisioning in M3
+      passwordHash: adminPasswordHash,
       role: "PLATFORM_ADMIN",
       phone: null,
     },
