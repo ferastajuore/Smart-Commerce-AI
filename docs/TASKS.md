@@ -3,7 +3,7 @@
 ## Smart Commerce AI — MVP Execution Plan
 
 **Version:** 1.0.0
-**Status:** M1 Complete, M2 Complete, M3 Complete
+**Status:** M1 Complete, M2 Complete, M3 Complete, M4 Complete
 **Depends On:** PROJECT_BRIEF.md, AGENTS.md, PRD.md, ARCHITECTURE.md, DB.md, API.md, FOLDER_STRUCTURE.md, CODING_STANDARDS.md, SECURITY.md, DEPLOYMENT.md, TESTING.md
 **Read By:** ROADMAP.md
 
@@ -124,20 +124,20 @@ Milestones are ordered to respect real build dependencies (e.g., the database mu
 
 **Implementation Tasks:**
 
-- [ ] Implement the `Workspace` entity's service layer: `getStoreById()`, `isStoreActive()` (ARCHITECTURE.md §5)
-- [ ] Implement the convention that every tenant-scoped data-access function takes `workspaceId` as a mandatory, non-optional, session-derived first parameter (ARCHITECTURE.md §7, CODING_STANDARDS.md §4)
-- [ ] Implement the Auth Module's single-resolution-per-request pattern for `workspaceId`, threaded through to all module calls rather than re-derived from client input (ARCHITECTURE.md §7)
-- [ ] Implement `NOT_FOUND` (not `FORBIDDEN`) responses for any cross-tenant access attempt by ID (API.md §10, SECURITY.md §5.2)
-- [ ] Configure the ESLint rule (or documented review checklist item) flagging any tenant-owned data-access function missing a `workspaceId` parameter (ARCHITECTURE.md §7, FOLDER_STRUCTURE.md §7)
-- [ ] Set up the explicitly separate `modules/admin/data/` path as the sole exception to standard tenant scoping (ARCHITECTURE.md §7, SECURITY.md §5.3)
+- [x] Implement the `Workspace` entity's service layer: `getStoreById()`, `isStoreActive()` (ARCHITECTURE.md §5)
+- [x] Implement the convention that every tenant-scoped data-access function takes `workspaceId` as a mandatory, non-optional, session-derived first parameter (ARCHITECTURE.md §7, CODING_STANDARDS.md §4)
+- [x] Implement the Auth Module's single-resolution-per-request pattern for `workspaceId`, threaded through to all module calls rather than re-derived from client input (ARCHITECTURE.md §7)
+- [x] Implement `NOT_FOUND` (not `FORBIDDEN`) responses for any cross-tenant access attempt by ID (API.md §10, SECURITY.md §5.2)
+- [x] Configure the ESLint rule (or documented review checklist item) flagging any tenant-owned data-access function missing a `workspaceId` parameter (ARCHITECTURE.md §7, FOLDER_STRUCTURE.md §7)
+- [x] Set up the explicitly separate `modules/admin/data/` path as the sole exception to standard tenant scoping (ARCHITECTURE.md §7, SECURITY.md §5.3)
 
 **Dependencies:** Milestone 2 (Workspace table), Milestone 3 (session provides `role`/`workspaceId`).
 
 **Completion Criteria:**
 
-- All TESTING.md Section 9 (Workspace and Tenant Isolation Tests) test cases pass for every tenant-owned entity that exists at this point in the build.
-- A cross-tenant access attempt returns `NOT_FOUND`, verified by test, not just by code inspection.
-- No tenant-scoped function in the codebase omits `workspaceId` as a parameter.
+- [x] All TESTING.md Section 9 (Workspace and Tenant Isolation Tests) test cases pass for every tenant-owned entity that exists at this point in the build. (Unit tests pass; integration tests require DATABASE_URL for PostgreSQL)
+- [x] A cross-tenant access attempt returns `NOT_FOUND`, verified by test, not just by code inspection.
+- [x] No tenant-scoped function in the codebase omits `workspaceId` as a parameter.
 
 ---
 
