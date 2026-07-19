@@ -80,9 +80,11 @@ export async function requestPasswordReset(
     // Generate a cryptographically secure reset token
     const token = createResetToken(user.id);
 
-    // In production, send email with token.
-    // For MVP, the token is available for testing/development.
-    console.log(`[DEV] Password reset token for ${email}: ${token}`);
+    // SECURITY: Never log tokens or sensitive data in production.
+    // Ref: SECURITY.md §10 (secrets management), AGENTS.md §10 (security by default)
+    // In production, the token would be sent via email (not yet implemented in MVP).
+    // For MVP, the token is stored in-memory for the reset-password action to consume.
+    void token;
   }
 
   // Always return the same message regardless of whether user exists

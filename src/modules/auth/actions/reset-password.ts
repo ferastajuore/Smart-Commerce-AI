@@ -6,16 +6,17 @@
 //
 // Validates the reset token, hashes the new password,
 // updates the user record, and marks the token as used.
-
-import bcrypt from "bcryptjs";
+//
+// Architecture: Actions → Services → Data → Prisma
+// This action does NOT access Prisma directly — all database
+// operations go through the service and data layers.
 
 import {
   resetPasswordSchema,
   type ResetPasswordInput,
 } from "../validation/password-reset-schema";
-import { BCRYPT_WORK_FACTOR } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { validateResetToken, markTokenUsed } from "./reset-token-store";
+import { resetUserPassword } from "../services/reset-user-password";
+import { handleActionError } from "@/shared/errors/handle-action-error";
 
 export type ResetPasswordResult = {
   success: boolean;
@@ -46,31 +47,18 @@ export async function resetPassword(
 
   const { token, password } = parsed.data;
 
-  // Validate the reset token
-  const tokenData = validateResetToken(token);
-  if (!tokenData) {
+  try {
+    // Delegate to the service layer — no Prisma access here
+    await resetUserPassword(token, password);
+
     return {
-      success: false,
-      message: "Invalid or expired reset token. Please request a new one.",
+      success: true,
+      message:
+        "Password reset successfully. You can now sign in with your new password.",
     };
+  } catch (error) {
+    // Ref: CODING_STANDARDS.md §6 (handle AppError with correct response)
+    const { error: message } = handleActionError(error);
+    return { success: false, message };
   }
-
-  // Hash the new password
-  // Ref: SECURITY.md §4.1 (bcrypt with fixed work factor)
-  const passwordHash = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
-
-  // Update the user's password
-  await prisma.user.update({
-    where: { id: tokenData.userId },
-    data: { passwordHash },
-  });
-
-  // Mark the token as used (single-use)
-  markTokenUsed(token);
-
-  return {
-    success: true,
-    message:
-      "Password reset successfully. You can now sign in with your new password.",
-  };
 }
