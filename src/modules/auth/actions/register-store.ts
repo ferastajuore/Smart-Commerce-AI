@@ -16,11 +16,15 @@
 // Facebook Page connection requirement (PRD.md REG-3) is enforced at the
 // business-rule level via isMessengerConnected(). The actual connection
 // mechanism is implemented in Milestone 9.
+//
+// Session creation (signIn) happens on the client side via next-auth/react.
+// Server-side actions handle only validation, rate limiting, and database
+// operations. Ref: signIn from next-auth/react must be called from the
+// client because it makes an internal fetch to /api/auth/signin which sets
+// session cookies that must propagate to the browser.
 
 "use server";
 
-import { signIn } from "next-auth/react";
-import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import bcrypt from "bcryptjs";
 
@@ -39,12 +43,16 @@ import {
 import { BCRYPT_WORK_FACTOR } from "@/lib/auth";
 
 export type RegisterStoreResult =
-  | { success: true; redirectTo: string }
+  | { success: true }
   | { success: false; error: string };
 
 /**
  * Registers a new Store Owner and creates their Workspace with an
  * automatic 14-day trial.
+ *
+ * This action handles server-side validation, rate limiting, and database
+ * operations only. Session creation (signIn) happens on the client side
+ * via next-auth/react after this action returns success.
  *
  * Security measures applied:
  * - Input validation via Zod schema (CODING_STANDARDS.md §7)
@@ -56,7 +64,7 @@ export type RegisterStoreResult =
  *
  * @param _prevState - Previous form state (React useActionState pattern)
  * @param formData - Raw form data containing registration fields
- * @returns Result with redirect path on success, or error message
+ * @returns Result with success status, or error message
  */
 export async function registerStore(
   _prevState: RegisterStoreResult | null,
@@ -180,20 +188,9 @@ export async function registerStore(
     };
   }
 
-  // Sign in the newly registered user
-  // Ref: SECURITY.md §4.2 (session established via NextAuth JWT)
-  const signInResult = await signIn("credentials", {
-    email,
-    password,
-    redirect: false,
-  });
-
-  if (signInResult?.error) {
-    // Account was created successfully but auto sign-in failed.
-    // Redirect to login — the user can sign in with their new credentials.
-    // Ref: AGENTS.md §10 (deterministic errors, never silent failures)
-    redirect("/login");
-  }
-
-  redirect("/stores/dashboard");
+  // Registration successful. Session creation (signIn) happens on the
+  // client side via next-auth/react. The client will call:
+  //   signIn("credentials", { email, password, redirect: false })
+  // and then redirect to /stores/dashboard.
+  return { success: true };
 }

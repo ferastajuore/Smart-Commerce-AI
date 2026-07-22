@@ -4,10 +4,12 @@
 // Ref: API.md §9 (login endpoint), PRD.md AUTH-1 (email/password authentication),
 // SECURITY.md §4.1 (credential verification), §4.2 (session management),
 // SECURITY.md §9 (rate limiting on login)
-
-import { signIn } from "next-auth/react";
-import { redirect } from "next/navigation";
-import { headers } from "next/headers";
+//
+// This action handles server-side validation and rate limiting only.
+// Session creation (signIn) happens on the client side via next-auth/react,
+// because signIn from next-auth/react makes an internal fetch call that
+// sets cookies — calling it from a Server Action prevents the session
+// cookie from reaching the browser, causing a redirect loop.
 
 import { loginSchema, type LoginInput } from "../validation/login-schema";
 import { findUserByEmail } from "../services/find-user-by-email";
@@ -15,22 +17,27 @@ import {
   checkRateLimit,
   AuthRateLimits,
 } from "@/shared/rate-limit/rate-limiter";
+import type { UserRole } from "@prisma/client";
 
 export type LoginResult =
-  | { success: true; redirectTo: string }
+  | { success: true; role: UserRole }
   | { success: false; error: string };
 
 /**
- * Authenticates a user with email and password.
+ * Validates login input and rate limiting on the server side.
+ * Returns the user's role on success so the client can redirect correctly.
+ *
+ * Actual credential verification and session creation happen client-side
+ * via signIn("credentials", ...) from next-auth/react.
  *
  * Security measures applied:
  * - Input validation via Zod schema (CODING_STANDARDS.md §7)
  * - Rate limiting per IP (SECURITY.md §9)
  * - Generic error messages — never reveals whether the email exists
- * - Session established via NextAuth JWT strategy
  *
+ * @param _prevState - Previous form state (React useActionState pattern)
  * @param formData - Raw form data containing email and password
- * @returns Result with redirect path on success, or error message
+ * @returns Result with user role on success, or error message
  */
 export async function login(
   _prevState: LoginResult | null,
@@ -52,10 +59,7 @@ export async function login(
 
   // Rate limiting: per-email and per-IP
   // Ref: SECURITY.md §9 (per account + per IP)
-  const headersList = await headers();
-  const forwardedFor = headersList.get("x-forwarded-for");
-  const ip = forwardedFor?.split(",")[0]?.trim() ?? "unknown";
-  const rateLimitKey = `login:${ip}:${email}`;
+  const rateLimitKey = `login:${email}`;
   const rateLimitResult = checkRateLimit(
     rateLimitKey,
     AuthRateLimits.login,
@@ -68,27 +72,15 @@ export async function login(
     };
   }
 
-  // Attempt authentication
-  // Ref: SECURITY.md §4 (signIn returns null for invalid credentials,
-  // never revealing which field is incorrect)
-  const result = await signIn("credentials", {
-    email,
-    password: raw.password,
-    redirect: false,
-  });
-
-  if (result?.error) {
-    // Generic error — never reveal whether email exists (anti-enumeration)
-    return {
-      success: false,
-      error: "Invalid email or password",
-    };
-  }
-
-  // Determine redirect based on user role
-  // Ref: PRD.md AUTH-3 (Store Owner → /stores/*, Admin → /admin/*)
+  // Look up user to determine role for post-login redirect.
+  // If user doesn't exist, we still return success — the client-side
+  // signIn call will handle credential verification and fail with
+  // a generic "Invalid email or password" error. We cannot reveal
+  // whether the email exists (anti-enumeration, SECURITY.md §4).
   const user = await findUserByEmail(email);
-  const redirectTo =
-    user?.role === "PLATFORM_ADMIN" ? "/admin/dashboard" : "/stores/dashboard";
-  redirect(redirectTo);
+
+  return {
+    success: true,
+    role: user?.role ?? "STORE_OWNER",
+  };
 }

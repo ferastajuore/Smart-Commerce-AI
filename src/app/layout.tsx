@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Tajawal } from "next/font/google";
+import { ToastProvider } from "@/shared/ui/toast";
 import "./globals.css";
 
 // Tajawal font — AGENTS.md design rules: "ALL fonts → Tajawal"
@@ -24,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${TajawalFont.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-surface text-on-surface">
-        {children}
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );

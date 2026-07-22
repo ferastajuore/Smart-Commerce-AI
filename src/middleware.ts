@@ -43,6 +43,10 @@ export default withAuth(
     return NextResponse.next();
   },
   {
+    secret: process.env.NEXTAUTH_SECRET,
+    pages: {
+      signIn: "/login",
+    },
     callbacks: {
       // Only protect routes that need authentication
       // Public routes (login, register, etc.) are excluded
