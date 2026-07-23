@@ -1,19 +1,3 @@
-// Register page — Store Registration
-// Ref: PRD.md REG-1 (new user registers a Store by providing business details
-// and creating an owner account), FOLDER_STRUCTURE.md §4 (app/(auth)/register/)
-//
-// DESIGN.md guidance:
-// - Dark theme: surface #051424, cards elevated with 7% white border
-// - Primary actions: solid Indigo background (#c0c1ff)
-// - Inputs: dark-themed, 1px border, focus transitions to Indigo with glow
-// - Font: Tajawal (AGENTS.md)
-// - Rounded: 16px (2xl) for main containers, 12px (xl) for inputs/buttons
-//
-// Phone verification (PRD.md REG-2) is DEFERRED to a future milestone.
-// Facebook Page connection (PRD.md REG-3) is enforced at the business-rule
-// level in the server action, not in this UI — connection mechanics are
-// implemented in Milestone 9.
-
 "use client";
 
 import { useActionState } from "react";
@@ -31,11 +15,11 @@ export default function RegisterPage() {
   );
 
   return (
-    <div className="rounded-2xl border border-white/7 bg-surface-container p-8 shadow-lg">
-      <h2 className="mb-2 text-center text-xl font-semibold text-on-surface">
+    <div className="rounded-2xl border border-border bg-surface p-8 shadow-lg">
+      <h2 className="mb-2 text-center text-xl font-semibold text-foreground">
         Register your store
       </h2>
-      <p className="mb-6 text-center text-sm text-on-surface-variant">
+      <p className="mb-6 text-center text-sm text-muted">
         Create your account and start your 14-day free trial.
       </p>
 
@@ -44,7 +28,7 @@ export default function RegisterPage() {
         <div>
           <label
             htmlFor="businessName"
-            className="mb-1.5 block text-sm font-medium text-on-surface-variant"
+            className="mb-1.5 block text-sm font-medium text-muted"
           >
             Business name
           </label>
@@ -55,7 +39,7 @@ export default function RegisterPage() {
             required
             autoComplete="organization"
             placeholder="Your business name"
-            className="w-full rounded-xl border border-white/7 bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-outline transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground placeholder:text-placeholder transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
         </div>
 
@@ -63,7 +47,7 @@ export default function RegisterPage() {
         <div>
           <label
             htmlFor="email"
-            className="mb-1.5 block text-sm font-medium text-on-surface-variant"
+            className="mb-1.5 block text-sm font-medium text-muted"
           >
             Email address
           </label>
@@ -74,7 +58,7 @@ export default function RegisterPage() {
             required
             autoComplete="email"
             placeholder="you@example.com"
-            className="w-full rounded-xl border border-white/7 bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-outline transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground placeholder:text-placeholder transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
         </div>
 
@@ -82,7 +66,7 @@ export default function RegisterPage() {
         <div>
           <label
             htmlFor="contactEmail"
-            className="mb-1.5 block text-sm font-medium text-on-surface-variant"
+            className="mb-1.5 block text-sm font-medium text-muted"
           >
             Contact email
           </label>
@@ -93,7 +77,7 @@ export default function RegisterPage() {
             required
             autoComplete="email"
             placeholder="contact@yourbusiness.com"
-            className="w-full rounded-xl border border-white/7 bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-outline transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground placeholder:text-placeholder transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
         </div>
 
@@ -101,7 +85,7 @@ export default function RegisterPage() {
         <div>
           <label
             htmlFor="contactPhone"
-            className="mb-1.5 block text-sm font-medium text-on-surface-variant"
+            className="mb-1.5 block text-sm font-medium text-muted"
           >
             Contact phone
           </label>
@@ -112,7 +96,7 @@ export default function RegisterPage() {
             required
             autoComplete="tel"
             placeholder="+218 91 123 4567"
-            className="w-full rounded-xl border border-white/7 bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-outline transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground placeholder:text-placeholder transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
         </div>
 
@@ -120,7 +104,7 @@ export default function RegisterPage() {
         <div>
           <label
             htmlFor="password"
-            className="mb-1.5 block text-sm font-medium text-on-surface-variant"
+            className="mb-1.5 block text-sm font-medium text-muted"
           >
             Password
           </label>
@@ -131,7 +115,7 @@ export default function RegisterPage() {
             required
             autoComplete="new-password"
             placeholder="At least 8 characters"
-            className="w-full rounded-xl border border-white/7 bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-outline transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground placeholder:text-placeholder transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
         </div>
 
@@ -139,7 +123,7 @@ export default function RegisterPage() {
         <div>
           <label
             htmlFor="confirmPassword"
-            className="mb-1.5 block text-sm font-medium text-on-surface-variant"
+            className="mb-1.5 block text-sm font-medium text-muted"
           >
             Confirm password
           </label>
@@ -150,13 +134,13 @@ export default function RegisterPage() {
             required
             autoComplete="new-password"
             placeholder="Re-enter your password"
-            className="w-full rounded-xl border border-white/7 bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-outline transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground placeholder:text-placeholder transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
         </div>
 
         {/* Error message */}
         {state && !state.success && (
-          <div className="rounded-lg bg-error-container/20 border border-error/30 px-4 py-3 text-sm text-error">
+          <div className="rounded-lg bg-danger/20 border border-danger/30 px-4 py-3 text-sm text-danger">
             {state.error}
           </div>
         )}
@@ -165,18 +149,18 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-container disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-xl bg-accent py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Creating your store..." : "Create store"}
         </button>
       </form>
 
       {/* Login link */}
-      <p className="mt-6 text-center text-sm text-on-surface-variant">
+      <p className="mt-6 text-center text-sm text-muted">
         Already have an account?{" "}
         <a
           href="/login"
-          className="font-medium text-primary hover:text-primary-container transition-colors"
+          className="font-medium text-accent hover:text-accent-hover transition-colors"
         >
           Sign in
         </a>

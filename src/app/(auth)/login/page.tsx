@@ -1,30 +1,3 @@
-// Login page
-// Ref: PRD.md AUTH-1 (email/password authentication),
-// FOLDER_STRUCTURE.md §4 (app/(auth)/login/)
-//
-// DESIGN.md guidance:
-// - Dark theme: surface #051424, cards elevated with 7% white border
-// - Primary actions: solid Indigo background (#c0c1ff)
-// - Inputs: dark-themed, 1px border, focus transitions to Indigo with glow
-// - Font: Tajawal (AGENTS.md)
-// - Rounded: 16px (2xl) for main containers, 12px (xl) for inputs/buttons
-//
-// DESIGN_SYSTEM.md §3.3: Feedback Over Silence — buttons show loading states,
-// forms show validation errors inline, state changes animate.
-//
-// Login flow:
-// 1. Credentials captured in state via onSubmit before form submission
-// 2. Server action (login.ts) validates input, rate-limits, and looks up user
-// 3. On success, client calls POST /api/auth/login with saved credentials
-//    to create the session cookie
-//    (custom endpoint needed because NextAuth v4 CredentialsProvider body parsing
-//     is incompatible with Next.js 16 Web ReadableStream)
-// 4. On success, toast + redirect to role-appropriate dashboard
-//
-// NOTE: React 19 useActionState resets form inputs after the server action
-// completes. We must capture credentials in component state before submission
-// so they survive the reset and are available for the session-cookie endpoint.
-
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
@@ -41,15 +14,8 @@ export default function LoginPage() {
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, isPending] = useActionState(login, initialState);
 
-  // isSigningIn tracks the fetch call to POST /api/auth/login (session cookie creation).
-  // Set to true in handleSubmit (event handler) so it covers both the server
-  // action phase and the fetch phase. Reset to false only on fetch failure.
   const [isSigningIn, setIsSigningIn] = useState(false);
 
-  // Credentials must be captured in state before the form action runs,
-  // because React 19 useActionState resets form inputs after the action
-  // completes. Without this, the useEffect below would read empty strings
-  // from the reset form, causing POST /api/auth/login to fail with 400.
   const [savedCredentials, setSavedCredentials] = useState<{
     email: string;
     password: string;
@@ -57,9 +23,6 @@ export default function LoginPage() {
 
   const isSubmitting = isPending || isSigningIn;
 
-  // Intercept form submission to capture credentials in state and start
-  // the loading state. This runs in the event handler (not the effect),
-  // so it avoids the lint rule against synchronous setState in effects.
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     const form = e.currentTarget;
     const email = String(new FormData(form).get("email") ?? "");
@@ -68,8 +31,6 @@ export default function LoginPage() {
     setIsSigningIn(true);
   }
 
-  // After server action validates credentials, call the custom login endpoint
-  // to create the session cookie, then redirect to the correct dashboard by role.
   useEffect(() => {
     if (!state?.success || !state.role || !savedCredentials) return;
 
@@ -107,8 +68,8 @@ export default function LoginPage() {
   }, [state, router, savedCredentials, addToast]);
 
   return (
-    <div className="rounded-2xl border border-white/7 bg-surface-container p-8 shadow-lg">
-      <h2 className="mb-6 text-center text-xl font-semibold text-on-surface">
+    <div className="rounded-2xl border border-border bg-surface p-8 shadow-lg">
+      <h2 className="mb-6 text-center text-xl font-semibold text-foreground">
         Sign in to your account
       </h2>
 
@@ -122,7 +83,7 @@ export default function LoginPage() {
         <div>
           <label
             htmlFor="email"
-            className="mb-1.5 block text-sm font-medium text-on-surface-variant"
+            className="mb-1.5 block text-sm font-medium text-muted"
           >
             Email address
           </label>
@@ -134,7 +95,7 @@ export default function LoginPage() {
             autoComplete="email"
             placeholder="you@example.com"
             disabled={isSubmitting}
-            className="w-full rounded-xl border border-white/7 bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-outline transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground placeholder:text-placeholder transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
 
@@ -142,7 +103,7 @@ export default function LoginPage() {
         <div>
           <label
             htmlFor="password"
-            className="mb-1.5 block text-sm font-medium text-on-surface-variant"
+            className="mb-1.5 block text-sm font-medium text-muted"
           >
             Password
           </label>
@@ -154,25 +115,25 @@ export default function LoginPage() {
             autoComplete="current-password"
             placeholder="Enter your password"
             disabled={isSubmitting}
-            className="w-full rounded-xl border border-white/7 bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-outline transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground placeholder:text-placeholder transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-50"
           />
         </div>
 
-        {/* Server-side validation errors (e.g. rate limited) */}
+        {/* Server-side validation errors */}
         {state && !state.success && state.error && (
           <div
             role="alert"
-            className="rounded-lg border border-tertiary-700/30 bg-tertiary-900/20 px-4 py-3 text-sm text-tertiary-400"
+            className="rounded-lg border border-danger/30 bg-danger/20 px-4 py-3 text-sm text-danger"
           >
             {state.error}
           </div>
         )}
 
-        {/* Submit button with loading spinner */}
+        {/* Submit button */}
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? (
             <>
@@ -188,7 +149,7 @@ export default function LoginPage() {
         <div className="flex items-center justify-between text-sm">
           <a
             href="/forgot-password"
-            className="text-primary hover:text-primary-container transition-colors"
+            className="text-accent hover:text-accent-hover transition-colors"
           >
             Forgot your password?
           </a>
@@ -196,11 +157,11 @@ export default function LoginPage() {
       </form>
 
       {/* Register link */}
-      <p className="mt-6 text-center text-sm text-on-surface-variant">
+      <p className="mt-6 text-center text-sm text-muted">
         Don&apos;t have an account?{" "}
         <a
           href="/register"
-          className="font-medium text-primary hover:text-primary-container transition-colors"
+          className="font-medium text-accent hover:text-accent-hover transition-colors"
         >
           Register your store
         </a>

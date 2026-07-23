@@ -1,10 +1,3 @@
-// Reset Password page
-// Ref: PRD.md AUTH-5 (password reset and account recovery flows),
-// FOLDER_STRUCTURE.md §4 (app/(auth)/reset-password/)
-//
-// Receives a token via query parameter, validates it,
-// and allows the user to set a new password.
-
 "use client";
 
 import { useActionState } from "react";
@@ -28,17 +21,17 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="rounded-2xl border border-white/7 bg-surface-container p-8 shadow-lg">
-        <h2 className="mb-4 text-center text-xl font-semibold text-on-surface">
+      <div className="rounded-2xl border border-border bg-surface p-8 shadow-lg">
+        <h2 className="mb-4 text-center text-xl font-semibold text-foreground">
           Invalid reset link
         </h2>
-        <p className="mb-6 text-center text-sm text-on-surface-variant">
+        <p className="mb-6 text-center text-sm text-muted">
           This password reset link is invalid or missing a token. Please request
           a new one.
         </p>
         <a
           href="/forgot-password"
-          className="block w-full rounded-xl bg-primary py-3 text-center text-sm font-semibold text-on-primary transition-colors hover:bg-primary-container"
+          className="block w-full rounded-xl bg-accent py-3 text-center text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover"
         >
           Request new reset link
         </a>
@@ -47,11 +40,11 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="rounded-2xl border border-white/7 bg-surface-container p-8 shadow-lg">
-      <h2 className="mb-2 text-center text-xl font-semibold text-on-surface">
+    <div className="rounded-2xl border border-border bg-surface p-8 shadow-lg">
+      <h2 className="mb-2 text-center text-xl font-semibold text-foreground">
         Set new password
       </h2>
-      <p className="mb-6 text-center text-sm text-on-surface-variant">
+      <p className="mb-6 text-center text-sm text-muted">
         Enter your new password below.
       </p>
 
@@ -63,7 +56,7 @@ function ResetPasswordForm() {
         <div>
           <label
             htmlFor="password"
-            className="mb-1.5 block text-sm font-medium text-on-surface-variant"
+            className="mb-1.5 block text-sm font-medium text-muted"
           >
             New password
           </label>
@@ -75,7 +68,7 @@ function ResetPasswordForm() {
             autoComplete="new-password"
             placeholder="At least 8 characters"
             minLength={8}
-            className="w-full rounded-xl border border-white/7 bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-outline transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground placeholder:text-placeholder transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
         </div>
 
@@ -83,7 +76,7 @@ function ResetPasswordForm() {
         <div>
           <label
             htmlFor="confirmPassword"
-            className="mb-1.5 block text-sm font-medium text-on-surface-variant"
+            className="mb-1.5 block text-sm font-medium text-muted"
           >
             Confirm password
           </label>
@@ -94,7 +87,7 @@ function ResetPasswordForm() {
             required
             autoComplete="new-password"
             placeholder="Re-enter your password"
-            className="w-full rounded-xl border border-white/7 bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-outline transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground placeholder:text-placeholder transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
         </div>
 
@@ -103,8 +96,8 @@ function ResetPasswordForm() {
           <div
             className={`rounded-lg px-4 py-3 text-sm ${
               state.success
-                ? "bg-primary-container/20 border border-primary/30 text-primary"
-                : "bg-error-container/20 border border-error/30 text-error"
+                ? "bg-accent/20 border border-accent/30 text-accent"
+                : "bg-danger/20 border border-danger/30 text-danger"
             }`}
           >
             {state.message}
@@ -115,17 +108,17 @@ function ResetPasswordForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-container disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-xl bg-accent py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Resetting..." : "Reset password"}
         </button>
       </form>
 
       {/* Back to login */}
-      <p className="mt-6 text-center text-sm text-on-surface-variant">
+      <p className="mt-6 text-center text-sm text-muted">
         <a
           href="/login"
-          className="font-medium text-primary hover:text-primary-container transition-colors"
+          className="font-medium text-accent hover:text-accent-hover transition-colors"
         >
           Back to sign in
         </a>
@@ -138,9 +131,9 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="rounded-2xl border border-white/7 bg-surface-container p-8 shadow-lg">
+        <div className="rounded-2xl border border-border bg-surface p-8 shadow-lg">
           <div className="flex items-center justify-center py-8">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
           </div>
         </div>
       }

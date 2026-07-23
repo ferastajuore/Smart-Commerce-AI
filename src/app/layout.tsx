@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import { Tajawal } from "next/font/google";
-import { ToastProvider } from "@/shared/ui/toast";
 import "./globals.css";
 
-// Tajawal font — AGENTS.md design rules: "ALL fonts → Tajawal"
+/*
+ * Font: Tajawal for all text
+ * Ref: AGENTS.md §6 "ALL fonts → Tajawal"
+ * Loaded via next/font for optimal performance (DESIGN_SYSTEM.md §8.2)
+ * Covers Arabic + Latin subsets for Libya market
+ */
 const TajawalFont = Tajawal({
   subsets: ["arabic", "latin"],
   weight: ["300", "400", "500", "700", "800"],
@@ -23,9 +27,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${TajawalFont.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-surface text-on-surface">
-        <ToastProvider>{children}</ToastProvider>
+    <html
+      lang="en"
+      data-theme="dark"
+      suppressHydrationWarning
+      className={`${TajawalFont.variable} h-full antialiased`}
+    >
+      <body className="min-h-full bg-background text-foreground font-body">
+        {children}
       </body>
     </html>
   );

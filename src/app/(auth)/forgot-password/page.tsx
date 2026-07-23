@@ -1,10 +1,3 @@
-// Forgot Password page
-// Ref: PRD.md AUTH-5 (password reset and account recovery flows),
-// FOLDER_STRUCTURE.md §4 (app/(auth)/forgot-password/)
-//
-// SECURITY.md §4: Never reveals whether the email exists.
-// Always returns the same success message regardless.
-
 "use client";
 
 import { useActionState } from "react";
@@ -22,11 +15,11 @@ export default function ForgotPasswordPage() {
   );
 
   return (
-    <div className="rounded-2xl border border-white/7 bg-surface-container p-8 shadow-lg">
-      <h2 className="mb-2 text-center text-xl font-semibold text-on-surface">
+    <div className="rounded-2xl border border-border bg-surface p-8 shadow-lg">
+      <h2 className="mb-2 text-center text-xl font-semibold text-foreground">
         Reset your password
       </h2>
-      <p className="mb-6 text-center text-sm text-on-surface-variant">
+      <p className="mb-6 text-center text-sm text-muted">
         Enter your email address and we&apos;ll send you a link to reset your
         password.
       </p>
@@ -36,7 +29,7 @@ export default function ForgotPasswordPage() {
         <div>
           <label
             htmlFor="email"
-            className="mb-1.5 block text-sm font-medium text-on-surface-variant"
+            className="mb-1.5 block text-sm font-medium text-muted"
           >
             Email address
           </label>
@@ -47,7 +40,7 @@ export default function ForgotPasswordPage() {
             required
             autoComplete="email"
             placeholder="you@example.com"
-            className="w-full rounded-xl border border-white/7 bg-surface-container-low px-4 py-3 text-on-surface placeholder:text-outline transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-foreground placeholder:text-placeholder transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
         </div>
 
@@ -56,8 +49,8 @@ export default function ForgotPasswordPage() {
           <div
             className={`rounded-lg px-4 py-3 text-sm ${
               state.success
-                ? "bg-primary-container/20 border border-primary/30 text-primary"
-                : "bg-error-container/20 border border-error/30 text-error"
+                ? "bg-accent/20 border border-accent/30 text-accent"
+                : "bg-danger/20 border border-danger/30 text-danger"
             }`}
           >
             {state.message}
@@ -68,18 +61,18 @@ export default function ForgotPasswordPage() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-on-primary transition-colors hover:bg-primary-container disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-xl bg-accent py-3 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPending ? "Sending..." : "Send reset link"}
         </button>
       </form>
 
       {/* Back to login */}
-      <p className="mt-6 text-center text-sm text-on-surface-variant">
+      <p className="mt-6 text-center text-sm text-muted">
         Remember your password?{" "}
         <a
           href="/login"
-          className="font-medium text-primary hover:text-primary-container transition-colors"
+          className="font-medium text-accent hover:text-accent-hover transition-colors"
         >
           Sign in
         </a>
