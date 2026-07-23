@@ -4,6 +4,7 @@ import { type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/shared/utils";
+import { useSidebar } from "./sidebar-context";
 
 /* --------------------------------------------------------------------------
  * Sidebar — DESIGN_SYSTEM.md §18.2, §34.1–34.2
@@ -40,12 +41,14 @@ function Sidebar({
   userBlock,
 }: SidebarProps) {
   const pathname = usePathname();
+  const { isCollapsed } = useSidebar();
 
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 h-full w-60 flex flex-col",
-        "bg-background border-r border-separator"
+        "fixed start-0 top-0 h-full w-60 flex flex-col transition-all duration-300 ease-in-out z-50 overflow-hidden",
+        "bg-background border-e border-separator",
+        isCollapsed ? "-translate-x-full rtl:translate-x-full w-0" : "translate-x-0 w-60"
       )}
       style={{ zIndex: "var(--z-sticky)" as unknown as number }}
     >

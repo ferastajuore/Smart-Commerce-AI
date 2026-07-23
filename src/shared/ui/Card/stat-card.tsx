@@ -29,6 +29,8 @@ interface StatCardProps {
   color?: "primary" | "secondary" | "tertiary" | "neutral";
   /** Additional class names */
   className?: string;
+  /** Custom content rendered at the bottom (e.g. sparklines) */
+  children?: ReactNode;
 }
 
 const chipColorMap: Record<string, string> = {
@@ -47,6 +49,7 @@ function StatCard({
   badge,
   color = "primary",
   className,
+  children,
 }: StatCardProps) {
   return (
     <HeroCard
@@ -99,6 +102,9 @@ function StatCard({
       {caption && (
         <span className="text-caption text-muted">{caption}</span>
       )}
+
+      {/* Render children if provided (e.g. sparklines) */}
+      {children && <div className="mt-2 w-full">{children}</div>}
     </HeroCard>
   );
 }

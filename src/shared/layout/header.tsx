@@ -1,8 +1,9 @@
 "use client";
 
 import { type ReactNode } from "react";
-import { Bell, HelpCircle } from "lucide-react";
+import { Bell, HelpCircle, Menu } from "lucide-react";
 import { cn } from "@/shared/utils";
+import { useSidebar } from "./sidebar-context";
 
 /* --------------------------------------------------------------------------
  * Header — DESIGN_SYSTEM.md §18.3, §34.4
@@ -22,18 +23,29 @@ interface HeaderProps {
 }
 
 function Header({ left, right, hasUnreadNotifications, className }: HeaderProps) {
+  const { isCollapsed, toggleSidebar } = useSidebar();
+
   return (
     <header
       className={cn(
-        "fixed top-0 right-0 h-16 flex items-center justify-between gap-4",
+        "fixed top-0 end-0 h-16 flex items-center justify-between gap-4 transition-all duration-300 ease-in-out z-40 px-8",
         "bg-background border-b border-separator",
-        "pl-60 pr-8", // Offset by sidebar width (240px) + padding
+        isCollapsed ? "start-0" : "start-60",
         className
       )}
       style={{ zIndex: "var(--z-sticky)" as unknown as number }}
     >
-      {/* Left: search / breadcrumbs */}
-      <div className="flex-1 flex items-center gap-4">{left}</div>
+      {/* Left: search / breadcrumbs + Toggle Button */}
+      <div className="flex-1 flex items-center gap-3">
+        <button
+          onClick={toggleSidebar}
+          className="p-2 rounded-lg text-muted hover:bg-surface-tertiary hover:text-foreground transition-colors shrink-0"
+          aria-label="Toggle Sidebar"
+        >
+          <Menu size={20} />
+        </button>
+        <div className="flex-1">{left}</div>
+      </div>
 
       {/* Right: actions */}
       <div className="flex items-center gap-2">

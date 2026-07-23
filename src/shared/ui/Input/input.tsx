@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, type ReactNode } from "react";
 import { Input as HeroInput } from "@heroui/react";
 import { Eye, EyeOff } from "lucide-react";
