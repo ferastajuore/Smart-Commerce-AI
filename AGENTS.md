@@ -64,7 +64,8 @@ Read ai-sdk skill before implementing AI features.
 
 ## Design & coding Rules
 
-- Follow file DESIGN.md to take colors and use it 
+- Follow file DESIGN.md to take colors and use it
+- Follow file DESIGN_SYSTEM.md to take architectures and everything for design system and use it
 - ALL fonts → Tajawal
 - ALL numbers → toLocaleString('en-US')
 - ALL dates → format(date, 'dd MMM yyyy') from date-fns

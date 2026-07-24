@@ -93,33 +93,33 @@ export default function StoreDashboardPage() {
               className={cn(
                 "px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all",
                 timeRange === "7D"
-                  ? "bg-accent text-accent-foreground shadow-md"
+                  ? "bg-[#c0c1ff] text-[#07006c] font-bold shadow-md"
                   : "text-muted hover:text-foreground"
               )}
             >
-              ٧ أيام
+              7 أيام
             </button>
             <button
               onClick={() => setTimeRange("30D")}
               className={cn(
                 "px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all",
                 timeRange === "30D"
-                  ? "bg-accent text-accent-foreground shadow-md"
+                  ? "bg-[#c0c1ff] text-[#07006c] font-bold shadow-md"
                   : "text-muted hover:text-foreground"
               )}
             >
-              ٣٠ يوم
+              30 يوم
             </button>
             <button
               onClick={() => setTimeRange("90D")}
               className={cn(
                 "px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all",
                 timeRange === "90D"
-                  ? "bg-accent text-accent-foreground shadow-md"
+                  ? "bg-[#c0c1ff] text-[#07006c] font-bold shadow-md"
                   : "text-muted hover:text-foreground"
               )}
             >
-              ٩٠ يوم
+              90 يوم
             </button>
           </div>
           <button className="flex items-center gap-2 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.07] px-4 py-2 rounded-xl text-xs font-semibold text-foreground transition-all">
@@ -332,9 +332,9 @@ export default function StoreDashboardPage() {
             </h3>
             <div className="flex flex-col gap-3">
               {/* Action 1: Create New Product */}
-              <button className="flex items-center justify-between p-4 bg-accent text-accent-foreground rounded-xl font-semibold hover:brightness-110 active:scale-98 transition-all text-right">
+              <button className="flex items-center justify-between p-4 bg-[#c0c1ff] text-[#07006c] rounded-xl font-bold hover:brightness-105 active:scale-98 transition-all text-right shadow-lg shadow-[#c0c1ff]/20">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-[#07006c]/10 text-[#07006c] flex items-center justify-center">
                     <Plus size={16} />
                   </div>
                   <span>إنشاء منتج جديد</span>
@@ -542,7 +542,7 @@ export default function StoreDashboardPage() {
             </div>
 
             {/* Authorize button */}
-            <button className="w-full py-3 bg-accent text-accent-foreground hover:brightness-110 font-bold rounded-xl text-xs active:scale-98 transition-all shadow-lg shadow-accent/25 hover:shadow-accent/40">
+            <button className="w-full py-3 bg-[#c0c1ff] text-[#07006c] hover:brightness-105 font-bold rounded-xl text-xs active:scale-98 transition-all shadow-lg shadow-[#c0c1ff]/20">
               الموافقة على إعادة تخزين جماعي
             </button>
           </div>
